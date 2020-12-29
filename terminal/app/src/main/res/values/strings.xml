@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Ash</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">android SSH</string>
+</resources>
