@@ -14,7 +14,7 @@
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:gravity="left"
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
         android:textColor="#a4c639"

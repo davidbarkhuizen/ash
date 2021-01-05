@@ -2,6 +2,10 @@ package za.co.indrajala.ash
 
 import androidx.appcompat.app.AppCompatActivity
 import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.os.Handler
 import android.view.MotionEvent
@@ -14,6 +18,24 @@ class FullscreenActivity : AppCompatActivity() {
     private lateinit var fullscreenContent: TextView
     private lateinit var fullscreenContentControls: LinearLayout
     private val hideHandler = Handler()
+
+    private val lines = arrayListOf<String>()
+
+    private val screenHeight = 30
+    private var stdIn: String = ""
+
+    private fun refreshScreen() {
+        val screenTextView = findViewById<TextView>(R.id.fullscreen_content)
+
+        screenTextView.text = lines.toList()
+                .takeLast(listOf(screenHeight, lines.size).minOrNull()!!)
+                .joinToString("\n")
+    }
+
+    private fun log(line: String) {
+        lines.add(line)
+        refreshScreen()
+    }
 
     @SuppressLint("InlinedApi")
     private val hidePart2Runnable = Runnable {
@@ -45,6 +67,9 @@ class FullscreenActivity : AppCompatActivity() {
      * while interacting with activity UI.
      */
     private val delayHideTouchListener = View.OnTouchListener { view, motionEvent ->
+
+        checkUSB()
+
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS)
@@ -75,6 +100,8 @@ class FullscreenActivity : AppCompatActivity() {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById<Button>(R.id.dummy_button).setOnTouchListener(delayHideTouchListener)
+
+        log("onCreate")
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -84,6 +111,34 @@ class FullscreenActivity : AppCompatActivity() {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100)
+
+        log("onPostCreate")
+    }
+
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig);
+//
+//        if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+//            log("external keyboard connected")
+//        } else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+//            log("external keyboard disconnected")
+//        }
+//    }
+
+    override fun onResume() {
+        super.onResume()
+
+        log("onResume")
+    }
+
+    private fun checkUSB() {
+
+        val manager = getSystemService(Context.USB_SERVICE) as UsbManager
+
+        val deviceList = manager.getDeviceList()
+        val deviceCount = deviceList.keys.size
+
+        log("checkUSB: ${deviceCount} devices")
     }
 
     private fun toggle() {
@@ -127,6 +182,9 @@ class FullscreenActivity : AppCompatActivity() {
     }
 
     companion object {
+
+        private val ACTION_USB_PERMISSION: String = "za.co.indrajala.ash.USB_PERMISSION";
+
         /**
          * Whether or not the system UI should be auto-hidden after
          * [AUTO_HIDE_DELAY_MILLIS] milliseconds.
